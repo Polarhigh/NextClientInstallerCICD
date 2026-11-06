@@ -25,14 +25,36 @@ param(
     [switch]$help
 )
 
+if ($help) {
+    @'
+Build the Windows installer from a prepared NextClient Release payload.
+
+Usage: .\tools\installer\build_installer.ps1 [options]
+
+Options:
+  -Payload <path>          Prepared Windows x86 Release package (default: install).
+  -Version <version>       Package version, such as 2.6.0-preview.1.
+                          Defaults to the project version with a local Git suffix.
+  -Output <path>           Destination (default: out\installer\<version>).
+  -ToolsDirectory <path>   Tool cache (default: build\installer-tools).
+  -Python <path>           Existing Python 3.12 x86 executable.
+  -Iscc <path>             Existing Inno Setup compiler executable.
+  -SkipTests              Skip installer unit tests.
+  -SmokeTest              Exercise the built installer with synthetic files.
+  -Help                   Show this help without preparing tools or building.
+
+Relative paths use the repository root. Missing tools are prepared automatically.
+The build produces an EXE, a SHA-256 checksum, and a build manifest.
+
+Example:
+  .\tools\installer\build_installer.ps1 -Payload install -Version 2.6.0-preview.1 -SmokeTest
+'@
+    return
+}
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $repository_root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-
-if ($help) {
-    Get-Help -Name $PSCommandPath -Detailed | Out-String | Write-Output
-    return
-}
 
 function ResolveRepositoryPath([string]$value) {
     if (-not [IO.Path]::IsPathRooted($value)) {
